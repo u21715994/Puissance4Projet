@@ -11,11 +11,14 @@ public class Partie{
             System.out.println("1-Joueur contre Joueur  |  2-Joueur contre Ordinateur");
             int p = clavier.nextInt();
             while(p != 1 && p != 2){
-                if(p == 1)
-                    JvsJ.main(args);
-                    else
-                    JvsIA.main(args);
+                p = clavier.nextInt();
             }
+            
+            if(p == 1)
+                JvsJ.main(args);
+            else
+                JvsIA.main(args);
+                    
             System.out.println();
             System.out.println("Voulez-vous quitter Puissance 4");
             System.out.println("0-Oui  |  1-Non");
