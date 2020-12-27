@@ -2,7 +2,7 @@ import java.util.Random;
 
 public class Grille{
     /**
-     * @author Youssef Oussouf et Assia El Gharbi
+     * @authors Youssef Oussouf et Assia El Gharbi
      * Grille représente une grille
      * ayant des rangée, des colonnes 
      * et tableau de String
@@ -31,6 +31,18 @@ public class Grille{
         for(int i = row-1 ; i >= 0; i--){
             for(int z = column-1; z >= 0; z--){
                 grille[i][z] = "'' ";
+            }
+        }
+    }
+    
+    public Grille(Grille g){
+        row = g.row;
+        column = g.column;
+        j = g.j;
+        grille = new String[row][column];
+        for(int i = row-1 ; i >= 0; i--){
+            for(int z = column-1; z >= 0; z--){
+                grille[i][z] = g.grille[i][z];
             }
         }
     }
@@ -103,8 +115,8 @@ public class Grille{
         }
         this.grille[i][colonne-1] = j.getpion();
         actualiseGrille();
-        victoire();
-        matchnull();
+        if(!victoire())
+            matchnull();
     }
     
     /**
@@ -137,7 +149,6 @@ public class Grille{
             }
         }
         if (y == p){
-            System.out.println("Partie terminé.Match nul");
             return true;
         }
         return false;
@@ -170,7 +181,6 @@ public class Grille{
                 }
             }
             if(c == 2 || p == 2 || d == 2 || d1 == 1){
-                System.out.println("Le joueur " + j.getnom() + " à gagner la partie");
                 return true;
             }
         }
@@ -220,5 +230,101 @@ public class Grille{
             colonnepleine(c);
         }
         placerpion(c);
+    }
+    
+    /**
+     * void arbre()
+     * Méthode créant un arbre de Noeud(cf class Noeud) de profondeur 1
+     * et joue le meilleur coup 
+     * (cf int verif(Noeud n)) 
+     */
+    public void arbre(){
+        Noeud n[] = new Noeud[column];
+        Noeud r = new Noeud((this),n);
+        r.getinfo().copy();
+        r.getinfo().setgrille(grille);
+        Arbre a = new Arbre(r);
+        int i = 0;
+        for(int z = 0; z <= column-1; z++){
+            for(int y = row-1; y >= 0; y--){
+                if(grille[y][z] == "'' "){ 
+                    this.grille[y][z] = j.getpion();
+                    n[i] = new Noeud(new Grille(this),null);
+                    this.grille[y][z] = "'' ";
+                }
+            }
+            i++;
+        }
+        int j = 0;
+        int b = 0;
+        int c = 0;
+        while(j <= column-1){
+            if(b <= verif(r.getfils(j))){
+                b = verif(r.getfils(j));
+                c = j;
+            }
+            j++;
+        }
+        if(c <= column-2){
+            while(colonnepleine(c+1)){
+                c++;
+            }
+        }else{
+            while(colonnepleine(c+1)){
+                c--;
+            }
+        }
+        grille = r.getfils(c).getinfo().grille;
+        actualiseGrille();
+        if(!victoire())
+            matchnull();
+    }
+    
+    /**
+     * verif(Noeud n)
+     * Méthode vérifiant la grille du Noeud
+     * @param Noeud n 
+     * renvoie un entier positif si c'est un bon coup
+     * sinon renvoie un entier négatif
+     */
+    public int verif(Noeud n){
+        if(n == null)
+            return 0;
+        int a = 0;
+        int b = 0;
+        for(int i = 0 ; i <= row-1; i++){
+            for(int z = 0 ; z <= column-1; z++){
+                if(n.getinfo().grille[i][z] == j.getpion())
+                    a++;
+                if(i >= 1 && n.getinfo().grille[i][z] == " X " && n.getinfo().grille[i-1][z] == j.getpion() || i <= row-2 && n.getinfo().grille[i][z] == " X " && n.getinfo().grille[i+1][z] == j.getpion())
+                    b--;
+                if(i <= row-4 && n.getinfo().grille[i][z] == j.getpion() && n.getinfo().grille[i+1][z] == "'' " && n.getinfo().grille[i+2][z] == "'' " && n.getinfo().grille[i+3][z] == "'' ")
+                    a++;
+                if(i <= row-2 && n.getinfo().grille[i][z] == j.getpion() && n.getinfo().grille[i+1][z] == "'' ")
+                    a++;
+                if(i <= row-2 && n.getinfo().grille[i][z] == j.getpion() && n.getinfo().grille[i+1][z] == j.getpion())
+                    a+=3;
+                if(i <= row-4 && n.getinfo().grille[i][z] == " X " && n.getinfo().grille[i+1][z] == " X " && n.getinfo().grille[i+2][z] == " X " && n.getinfo().grille[i+3][z] == j.getpion())
+                    a+=4;
+                if( (z <= column-4 && n.getinfo().grille[i][z] == " X " && n.getinfo().grille[i][z+1] == " X " && n.getinfo().grille[i][z+2] == " X " && n.getinfo().grille[i][z+3] == j.getpion())
+                || (z <= column-4 && n.getinfo().grille[i][z] == j.getpion() && n.getinfo().grille[i][z+1] == " X " && n.getinfo().grille[i][z+2] == " X " && n.getinfo().grille[i][z+3] == " X ") )
+                    a+=4;
+                if((i <= row-4 && z >= 3) && ( (n.getinfo().grille[i][z] == " X " && n.getinfo().grille[i+1][z-1] == " X " && n.getinfo().grille[i+2][z-2] == " X " && n.getinfo().grille[i+3][z-3] == j.getpion()) ||
+                (n.getinfo().grille[i][z] == " X " && n.getinfo().grille[i+1][z-1] == " X " && n.getinfo().grille[i+2][z-2] == j.getpion() && n.getinfo().grille[i+3][z-3] == " X ") ||
+                (n.getinfo().grille[i][z] == " X " && n.getinfo().grille[i+1][z-1] == j.getpion() && n.getinfo().grille[i+2][z-2] == " X " && n.getinfo().grille[i+3][z-3] == " X ") ||
+                (n.getinfo().grille[i][z] == j.getpion() && n.getinfo().grille[i+1][z-1] == " X " && n.getinfo().grille[i+2][z-2] == " X " && n.getinfo().grille[i+3][z-3] == " X ") ))
+                    a+=6;
+                if((i <= row-4 && z <= column-4) && ( (n.getinfo().grille[i][z] == j.getpion() && n.getinfo().grille[i+1][z+1] == " X " && n.getinfo().grille[i+2][z+2] == " X " && n.getinfo().grille[i+3][z+3] == " X ") ||
+                (n.getinfo().grille[i][z] == " X " && n.getinfo().grille[i+1][z+1] == j.getpion() && n.getinfo().grille[i+2][z+2] == " X " && n.getinfo().grille[i+3][z+3] == " X ") ||
+                (n.getinfo().grille[i][z] == " X " && n.getinfo().grille[i+1][z+1] == " X " && n.getinfo().grille[i+2][z+2] == j.getpion() && n.getinfo().grille[i+3][z+3] == " X ") ||
+                (n.getinfo().grille[i][z] == " X " && n.getinfo().grille[i+1][z+1] == " X " && n.getinfo().grille[i+2][z+2] == " X " && n.getinfo().grille[i+3][z+3] == j.getpion()) )){
+                    a+=6;
+                }
+            }
+        }
+        
+        if(a <= -b)
+            return b;
+        return a;
     }
 }
